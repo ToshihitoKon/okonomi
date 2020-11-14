@@ -61,7 +61,7 @@ get_value_by_keys(){
 
     for key in $@; do
         _get_value_by_key
-        _print_value
+        _print_key_value
     done
 }
 
@@ -91,7 +91,7 @@ set_value(){
     value=$2
     group=$3
     _set_value_and_group_by_key
-    _print_value
+    _print_key_value
 }
 
 toggle_value(){
