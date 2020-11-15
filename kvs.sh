@@ -2,8 +2,11 @@
 cd `dirname $0`
 state_file="state"
 
+OUTPUT_VALUE_ONLY=0
+
 usase_exit(){
-    echo "Usase: $0 [get|getgroup|set|toggle|setgroup|list|listgroup] [args...]"
+    echo "Usase: $0 [OPTIONS] [COMMAND] [args...]"
+    echo -e "COMMAND"
     echo -e "\tget [keys...] : get value by key"
     echo -e "\tgetgroup [groups...] : get value by group"
     echo -e "\ttoggle [key] : toggle bool value by key"
@@ -11,6 +14,9 @@ usase_exit(){
     echo -e "\tsetgroup [group] [keys...] : set group to key"
     echo -e "\tlist : get existing keys"
     echo -e "\tlistgroup : get existing groups"
+    echo
+    echo -e "OPTIONS"
+    echo -e "\t-s : output value only"
     exit 1
 }
 
@@ -43,7 +49,11 @@ _set_group_to_key(){
 }
 
 _print_key_value(){
-    echo -e "$key\t$value"
+    if [ $OUTPUT_VALUE_ONLY -eq 1 ]; then
+        echo -e "$value"
+    else
+        echo -e "$key\t$value"
+    fi
 }
 
 _print_value(){
@@ -133,13 +143,20 @@ list_group(){
     cat $state_file | sed -e 's/\t.*\t.*//g' | grep -v "^$" | sort | uniq
 }
 
+touch $state_file
+state=`cat $state_file`
+
+while getopts s OPT; do
+    case $OPT in
+        s) OUTPUT_VALUE_ONLY=1;;
+    esac
+done
+shift $(expr $OPTIND - 1)
+
 if [ ! "$1" ];then
     usase_exit
 fi
 command=$1
-
-touch $state_file
-state=`cat $state_file`
 
 case "$command" in
     "get"      ) shift 1; get_value_by_keys $*;;
